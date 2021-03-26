@@ -40,35 +40,36 @@
 
     <body>
         <div class="container">
-            <canvas id="gameCanvas" width="800" height="800"></canvas>
-
-            <script>
-                let theCanvas = document.querySelector("#gameCanvas");
-                let ctx = theCanvas.getContext("2d");
-            </script>
-
-            <script>
-                if ("serviceWorker" in navigator) {
-                    window.addEventListener("load", function () {
-                        navigator.serviceWorker.register("./sw.js").then(
-                            function (registration) {
-                                // Registration was successful
-                                console.log(
-                                    "ServiceWorker registration successful with scope: ",
-                                    registration.scope
-                                );
-                            },
-                            function (err) {
-                                // registration failed :(
-                                console.log(
-                                    "ServiceWorker registration failed: ",
-                                    err
-                                );
-                            }
-                        );
-                    });
-                }
-            </script>
+            <h1>Project 2</h1>
+            <h3>Space Theme Side Scrolling Game</h3>
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
         </div>
+        <div class="container">
+            <button class="btn" id="btnStart">Start Game</button>
+        </div>
+
+        <script>
+            if ("serviceWorker" in navigator) {
+                window.addEventListener("load", function () {
+                    navigator.serviceWorker.register("./sw.js").then(
+                        function (registration) {
+                            // Registration was successful
+                            console.log(
+                                "ServiceWorker registration successful with scope: ",
+                                registration.scope
+                            );
+                        },
+                        function (err) {
+                            // registration failed :(
+                            console.log(
+                                "ServiceWorker registration failed: ",
+                                err
+                            );
+                        }
+                    );
+                });
+            }
+        </script>
+        <script src="./index.js"></script>
     </body>
 </html>
