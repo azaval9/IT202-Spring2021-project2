@@ -1,52 +1,141 @@
 const PLAYER_HEIGHT = 60;
 const PLAYER_WIDTH = 50;
+const MAX_HEIGHT = 550;
+const MIN_HEIGHT = 50;
+const MAX_WIDTH = 800;
+const MIN_WIDTH = 600;
+let GAMEACTIVE = false;
 
-let player = {
-    xpos: 30,
-    ypos: 240,
-    score: 0,
-    lives: 3,
-    level: 1,
-    image: "./images/p3.png",
-};
+class Player {
+    constructor() {
+        this.xpos = 30;
+        this.ypos = 240;
+        this.score = 0;
+        this.lives = 3;
+        this.level = 1;
+        this.image = new Image();
+        this.imageSrc = "./images/p3.png";
+    }
+}
 
-let enemy = {
-    xpos: 0,
-    ypos: 0,
-    damage: -1,
-    speed: 1,
-    image: "",
-};
+class Asteroid {
+    constructor() {
+        this.xpos = Math.floor(
+            Math.random() * (MAX_WIDTH - MIN_WIDTH + 1) + MIN_WIDTH
+        );
+        this.ypos = Math.floor(
+            Math.random() * (MAX_HEIGHT - MIN_HEIGHT + 1) + MIN_HEIGHT
+        );
+        this.damage = -1;
+        this.speed = 1;
+        this.image = new Image();
+        this.imageSrc = "./images/asteroid.png";
+    }
+}
 
-let powerUp = {
-    xpos: 0,
-    ypos: 0,
-    score: 1,
-    speed: 1,
-    image: "",
-};
+class Diamond {
+    constructor() {
+        this.xpos = Math.floor(
+            Math.random() * (MAX_WIDTH - MIN_WIDTH + 1) + MIN_WIDTH
+        );
+        this.ypos = Math.floor(
+            Math.random() * (MAX_HEIGHT - MIN_HEIGHT + 1) + MIN_HEIGHT
+        );
+        this.score = 1;
+        this.speed = 1;
+        this.image = new Image();
+        this.imageSrc = "./images/diamond.png";
+    }
+}
 
 let theCanvas = document.querySelector("#gameCanvas");
 let ctx = theCanvas.getContext("2d");
+let player = new Player();
 
-//draw player for the first time
-let playerImage = new Image();
-playerImage.onload = drawScreen;
-playerImage.src = player.image;
+let asteroids = [
+    new Asteroid(),
+    new Asteroid(),
+    new Asteroid(),
+    new Asteroid(),
+    new Asteroid(),
+    new Asteroid(),
+];
+let diamonds = [
+    new Diamond(),
+    new Diamond(),
+    new Diamond(),
+    new Diamond(),
+    new Diamond(),
+    new Diamond(),
+];
 
-ctx.font = "30px Arial";
-ctx.fillText("Hello World", 10, 50);
+// ! EVENT LISTENERS -----------------------------------
+let arrowUpDown = (event) => {
+    if (event.code == "ArrowUp") {
+        player.ypos -= 10;
+        //window.requestAnimationFrame(drawScreen);
+    }
+    if (event.code == "ArrowDown") {
+        player.ypos += 10;
+        //window.requestAnimationFrame(drawScreen);
+    }
+};
+
+//Start Button
+document.querySelector("#btnStart").addEventListener("click", (event) => {
+    document.querySelector("#btnStart").disabled = true;
+    document.querySelector("#btnRestart").disabled = false;
+    //ADD EVENT LISTENERES
+    window.addEventListener("keydown", arrowUpDown);
+    playGame();
+    console.log("Start game");
+});
+
+document.querySelector("#btnRestart").addEventListener("click", (event) => {
+    document.querySelector("#btnStart").disabled = false;
+    document.querySelector("#btnRestart").disabled = true;
+    window.removeEventListener("keydown", arrowUpDown);
+    //TODO: reset all variables and redraw the screen
+    console.log("Restart game");
+});
+
+//! FUNCTIONS ------------------------------------------
+function drawObject(obj) {
+    function loadDraw() {
+        ctx.beginPath();
+        ctx.drawImage(
+            obj.image,
+            obj.xpos,
+            obj.ypos,
+            PLAYER_WIDTH,
+            PLAYER_HEIGHT
+        );
+        ctx.closePath();
+    }
+
+    obj.image.onload = loadDraw;
+    obj.image.src = obj.imageSrc;
+}
 
 function drawScreen() {
     ctx.clearRect(0, 0, theCanvas.width, theCanvas.height);
     ctx.beginPath();
     ctx.drawImage(
-        playerImage,
+        player.image,
         player.xpos,
         player.ypos,
         PLAYER_WIDTH,
         PLAYER_HEIGHT
     );
+    // ! draw asteroids
+    for (i = 0; i < asteroids.length; i++) {
+        drawObject(asteroids[i]);
+    }
+
+    // ! draw diamonds
+    for (i = 0; i < diamonds.length; i++) {
+        drawObject(diamonds[i]);
+    }
     drawScore();
     drawLives();
     drawLevels();
@@ -77,20 +166,42 @@ function drawLevels() {
     ctx.closePath();
 }
 
-//Arrow keys
-// left - 37, up - 38 ,right = 39, down = 40
-window.addEventListener("keydown", (event) => {
-    if (event.code == "ArrowUp") {
-        player.ypos -= 10;
-        window.requestAnimationFrame(drawScreen);
-    }
-    if (event.code == "ArrowDown") {
-        player.ypos += 10;
-        window.requestAnimationFrame(drawScreen);
-    }
-});
+//TODO
+function restartGame() {
+    //clear the screen
+    //reset the player
+    //reset any level details
+}
 
-//Start Button
-document.querySelector("#btnStart").addEventListener("click", (event) => {
-    console.log("start game");
-});
+function moveObjectsLeft() {
+    // ! draw asteroids
+    for (i = 0; i < asteroids.length; i++) {
+        asteroids[i].xpos -= 1;
+        //drawAsteroid(asteroids[i]);
+    }
+
+    // ! draw diamonds
+    for (i = 0; i < diamonds.length; i++) {
+        diamonds[i].xpos -= 1;
+        //drawAsteroid(diamonds[i]);
+    }
+}
+
+//TODO
+function playGame() {
+    moveObjectsLeft();
+    //TODO: Move asteroids and diamonds across the screen
+    //TODO: hit detection
+    //good
+    //bad
+    //TODO: update lives
+    //TODO: MORE UPDATES TO GAME
+    //TODO: update screen
+    window.requestAnimationFrame(drawScreen);
+    playGame();
+}
+
+// ! START GAME LOGIC -------------------------------------------
+//draw player for the first time
+player.image.onload = drawScreen;
+player.image.src = player.imageSrc;
