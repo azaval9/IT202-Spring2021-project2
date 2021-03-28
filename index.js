@@ -318,3 +318,10 @@ function draw() {
         ctx.closePath();
     }
 }
+
+ctx.clearRect(0, 0, theCanvas.width, theCanvas.height);
+ctx.beginPath();
+ctx.font = "30px Arial";
+ctx.fillStyle = "white";
+ctx.fillText("PRESS START GAME", 250, 300);
+ctx.closePath();
