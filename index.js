@@ -1,10 +1,10 @@
-const PLAYER_HEIGHT = 60;
-const PLAYER_WIDTH = 50;
+const PLAYER_HEIGHT = 40;
+const PLAYER_WIDTH = 40;
 const MAX_HEIGHT = 550;
 const MIN_HEIGHT = 50;
-const MAX_WIDTH = 800;
+const MAX_WIDTH = 900;
 const MIN_WIDTH = 600;
-let GAMEACTIVE = false;
+let GAMEACTIVE = true;
 
 class Player {
     constructor() {
@@ -13,6 +13,7 @@ class Player {
         this.score = 0;
         this.lives = 3;
         this.level = 1;
+        this.radius = 20;
         this.image = new Image();
         this.imageSrc = "./images/p3.png";
     }
@@ -28,6 +29,7 @@ class Asteroid {
         );
         this.damage = -1;
         this.speed = 1;
+        this.radius = 20;
         this.image = new Image();
         this.imageSrc = "./images/asteroid.png";
     }
@@ -43,6 +45,7 @@ class Diamond {
         );
         this.score = 1;
         this.speed = 1;
+        this.radius = 20;
         this.image = new Image();
         this.imageSrc = "./images/diamond.png";
     }
@@ -87,15 +90,15 @@ document.querySelector("#btnStart").addEventListener("click", (event) => {
     document.querySelector("#btnRestart").disabled = false;
     //ADD EVENT LISTENERES
     window.addEventListener("keydown", arrowUpDown);
-    playGame();
+    draw();
     console.log("Start game");
 });
 
+//TODO: reset all variables and redraw the screen
 document.querySelector("#btnRestart").addEventListener("click", (event) => {
     document.querySelector("#btnStart").disabled = false;
     document.querySelector("#btnRestart").disabled = true;
     window.removeEventListener("keydown", arrowUpDown);
-    //TODO: reset all variables and redraw the screen
     console.log("Restart game");
 });
 
@@ -112,7 +115,6 @@ function drawObject(obj) {
         );
         ctx.closePath();
     }
-
     obj.image.onload = loadDraw;
     obj.image.src = obj.imageSrc;
 }
@@ -174,21 +176,116 @@ function restartGame() {
 }
 
 function moveObjectsLeft() {
+    let mySpeed = 1;
+    if (player.score == 3) {
+        mySpeed = 2;
+    } else if (player.score == 4) {
+        mySpeed = 4;
+    } else if (player.score >= 5) {
+        mySpeed = 6;
+    }
+
     // ! draw asteroids
     for (i = 0; i < asteroids.length; i++) {
-        asteroids[i].xpos -= 1;
-        //drawAsteroid(asteroids[i]);
+        asteroids[i].xpos -= mySpeed;
+    }
+    // ! draw diamonds
+    for (i = 0; i < diamonds.length; i++) {
+        diamonds[i].xpos -= mySpeed;
+    }
+}
+
+function checkCollision(ship, obj) {
+    //mozilla circle collision
+    //debugger;
+    let dx = ship.xpos + 10 - (obj.xpos + 10);
+    let dy = ship.ypos + 10 - (obj.ypos + 10);
+    let distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < ship.radius + obj.radius) {
+        return true;
+    }
+    return false;
+}
+
+function resetExtraObject(obj) {
+    obj.xpos = Math.floor(
+        Math.random() * (MAX_WIDTH - MIN_WIDTH + 1) + MIN_WIDTH
+    );
+    obj.ypos = Math.floor(
+        Math.random() * (MAX_HEIGHT - MIN_HEIGHT + 1) + MIN_HEIGHT
+    );
+}
+
+function checkLives() {
+    if (player.lives == 0) {
+        GAMEACTIVE = false;
+    }
+}
+
+//TODO:
+function updateScreen() {
+    ctx.clearRect(0, 0, theCanvas.width, theCanvas.height);
+    ctx.beginPath();
+    ctx.drawImage(
+        player.image,
+        player.xpos,
+        player.ypos,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT
+    );
+    // ! asteroids
+    for (i = 0; i < asteroids.length; i++) {
+        //check for collision
+        if (checkCollision(player, asteroids[i])) {
+            player.lives -= 1;
+            resetExtraObject(asteroids[i]);
+            //check lives
+            checkLives();
+        }
+        if (asteroids[i].xpos < -50) {
+            resetExtraObject(asteroids[i]);
+        }
+        ctx.drawImage(
+            asteroids[i].image,
+            asteroids[i].xpos,
+            asteroids[i].ypos,
+            PLAYER_WIDTH,
+            PLAYER_HEIGHT
+        );
     }
 
     // ! draw diamonds
     for (i = 0; i < diamonds.length; i++) {
-        diamonds[i].xpos -= 1;
-        //drawAsteroid(diamonds[i]);
+        // ! CHECK FOR COLLISOIN
+        if (checkCollision(player, diamonds[i])) {
+            player.score += 1;
+            resetExtraObject(diamonds[i]);
+        }
+        //check if image went out of bounds
+        if (diamonds[i].xpos < -50) {
+            resetExtraObject(diamonds[i]);
+        }
+        //draw image
+        ctx.drawImage(
+            diamonds[i].image,
+            diamonds[i].xpos,
+            diamonds[i].ypos,
+            PLAYER_WIDTH,
+            PLAYER_HEIGHT
+        );
     }
+    drawScore();
+    drawLives();
+    drawLevels();
+    ctx.closePath();
 }
 
-//TODO
-function playGame() {
+// ! START GAME LOGIC -------------------------------------------
+//draw player for the first time
+player.image.onload = drawScreen;
+player.image.src = player.imageSrc;
+
+function draw() {
     moveObjectsLeft();
     //TODO: Move asteroids and diamonds across the screen
     //TODO: hit detection
@@ -197,11 +294,13 @@ function playGame() {
     //TODO: update lives
     //TODO: MORE UPDATES TO GAME
     //TODO: update screen
-    window.requestAnimationFrame(drawScreen);
-    playGame();
+    //window.requestAnimationFrame(drawScreen);
+    //drawScreen();
+    updateScreen();
+    if (GAMEACTIVE) {
+        window.requestAnimationFrame(draw);
+    } else {
+        //display screen
+        console.log("over");
+    }
 }
-
-// ! START GAME LOGIC -------------------------------------------
-//draw player for the first time
-player.image.onload = drawScreen;
-player.image.src = player.imageSrc;
