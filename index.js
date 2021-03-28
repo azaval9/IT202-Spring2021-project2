@@ -4,7 +4,7 @@ const MAX_HEIGHT = 550;
 const MIN_HEIGHT = 50;
 const MAX_WIDTH = 900;
 const MIN_WIDTH = 600;
-let GAMEACTIVE = true;
+let GAMEACTIVE = false;
 
 class Player {
     constructor() {
@@ -90,6 +90,10 @@ document.querySelector("#btnStart").addEventListener("click", (event) => {
     document.querySelector("#btnRestart").disabled = false;
     //ADD EVENT LISTENERES
     window.addEventListener("keydown", arrowUpDown);
+    GAMEACTIVE = true;
+    //draw player for the first time
+    player.image.onload = drawScreen;
+    player.image.src = player.imageSrc;
     draw();
     console.log("Start game");
 });
@@ -99,6 +103,8 @@ document.querySelector("#btnRestart").addEventListener("click", (event) => {
     document.querySelector("#btnStart").disabled = false;
     document.querySelector("#btnRestart").disabled = true;
     window.removeEventListener("keydown", arrowUpDown);
+    GAMEACTIVE = false;
+    restartGame();
     console.log("Restart game");
 });
 
@@ -173,16 +179,30 @@ function restartGame() {
     //clear the screen
     //reset the player
     //reset any level details
+    player.score = 0;
+    player.lives = 3;
+    player.level = 1;
+
+    for (i = 0; i < asteroids.length; i++) {
+        resetExtraObject(asteroids[i]);
+    }
+
+    for (i = 0; i < diamonds.length; i++) {
+        resetExtraObject(diamonds[i]);
+    }
 }
 
 function moveObjectsLeft() {
     let mySpeed = 1;
     if (player.score == 3) {
         mySpeed = 2;
+        player.level = 2;
     } else if (player.score == 4) {
         mySpeed = 4;
+        player.level = 3;
     } else if (player.score >= 5) {
         mySpeed = 6;
+        player.level = 4;
     }
 
     // ! draw asteroids
@@ -280,27 +300,21 @@ function updateScreen() {
     ctx.closePath();
 }
 
-// ! START GAME LOGIC -------------------------------------------
-//draw player for the first time
-player.image.onload = drawScreen;
-player.image.src = player.imageSrc;
-
 function draw() {
     moveObjectsLeft();
-    //TODO: Move asteroids and diamonds across the screen
-    //TODO: hit detection
-    //good
-    //bad
-    //TODO: update lives
-    //TODO: MORE UPDATES TO GAME
-    //TODO: update screen
-    //window.requestAnimationFrame(drawScreen);
-    //drawScreen();
     updateScreen();
+
     if (GAMEACTIVE) {
         window.requestAnimationFrame(draw);
     } else {
         //display screen
         console.log("over");
+        //clear screen and write game over
+        ctx.clearRect(0, 0, theCanvas.width, theCanvas.height);
+        ctx.beginPath();
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "white";
+        ctx.fillText("GAME OVER", 300, 300);
+        ctx.closePath();
     }
 }
